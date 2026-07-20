@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>وِفْرة — معاينة التطبيق</title>
+</head>
+<body>
+<style>
+  :root{
+    --sand:#F6F2E9; --card:#FFFFFF; --ink:#182420; --muted:#5F6E66; --line:#E6DFD0;
+    --palm:#0E3B2E; --palm2:#16523F; --palmSoft:#2E7D5B; --brass:#B8912B; --brassInk:#8A6D1F;
+    --brassSoft:#F2E7C4; --madder:#C9584A; --madderSoft:#F6DED9; --okSoft:#E1EEE6;
+    --track:#ECE6D8; --header:#0E3B2E; --lightText:#F6F2E9;
+    --r-card:16px; --r-tok:12px; --r-chip:11px; --r-pill:999px;
+    --pg:#e9e4d8; --pg2:#e0dac9; --pgink:#232c27; --pgmuted:#67736b; --pgline:#d4cdbc;
+    --appfont:"Segoe UI",Tahoma,system-ui,"Noto Sans Arabic",sans-serif;
+    --mono:"IBM Plex Mono","Consolas","SF Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --pg:#0e120e; --pg2:#141a13; --pgink:#e6e9da; --pgmuted:#98a394; --pgline:#222a21; }
+  }
+  :root[data-theme="dark"]{ --pg:#0e120e; --pg2:#141a13; --pgink:#e6e9da; --pgmuted:#98a394; --pgline:#222a21; }
+  :root[data-theme="light"]{ --pg:#e9e4d8; --pg2:#e0dac9; --pgink:#232c27; --pgmuted:#67736b; --pgline:#d4cdbc; }
+
+  .app[data-apptheme="dark"]{
+    --sand:#0B1310; --card:#141F1A; --ink:#E9E6DA; --muted:#8FA096; --line:#22322A;
+    --brass:#D2A63A; --brassInk:#D2A63A; --brassSoft:#33301A; --madder:#D96A57;
+    --madderSoft:#361E1A; --okSoft:#153025; --track:#22322A; --header:#0A241B;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .wrap{
+    min-height:100vh;
+    background:linear-gradient(var(--pg),var(--pg2));
+    color:var(--pgink); font-family:var(--appfont);
+    display:flex; flex-direction:column; align-items:center; gap:20px;
+    padding:38px 16px 60px; direction:rtl;
+  }
+  .lead{max-width:540px; text-align:center; display:flex; flex-direction:column; gap:9px}
+  .lead h1{margin:0; font-size:23px; letter-spacing:-.3px; font-weight:800}
+  .lead h1 .k{color:var(--brassInk)}
+  .lead p{margin:0; font-size:13px; line-height:1.7; color:var(--pgmuted)}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center}
+  .seg{display:inline-flex; background:color-mix(in srgb,var(--pgink) 7%,transparent); border:1px solid var(--pgline); border-radius:var(--r-pill); padding:3px}
+  .seg button{border:0; background:transparent; color:var(--pgmuted); font-family:inherit; font-size:12.5px; font-weight:700; padding:7px 15px; border-radius:var(--r-pill); cursor:pointer}
+  .seg button.on{background:var(--palm); color:#fff}
+
+  /* ---------- iPhone frame ---------- */
+  .phone{
+    width:390px; max-width:100%; height:812px; position:relative;
+    background:#050706; border-radius:56px; padding:13px;
+    box-shadow:0 2px 0 2px #1a1a1c, 0 0 0 3px #2a2a2c, 0 34px 80px -24px rgba(0,0,0,.6);
+  }
+  .screen{position:relative; width:100%; height:100%; overflow:hidden; border-radius:44px;
+    background:var(--sand); color:var(--ink); direction:rtl; font-family:var(--appfont); display:flex; flex-direction:column}
+  .island{position:absolute; top:9px; left:50%; transform:translateX(-50%); width:116px; height:32px; background:#000; border-radius:20px; z-index:40}
+
+  .status{height:50px; flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between; padding:0 26px 6px; color:var(--lightText); font-size:14px; font-weight:600; position:relative; z-index:5}
+  .status .r{display:flex; gap:6px; align-items:center}
+
+  /* header */
+  .appbar{background:var(--header); color:var(--lightText); padding:2px 16px 0; flex:0 0 auto}
+  .appbar .row{display:flex; align-items:center; gap:10px; padding-bottom:13px}
+  .logo{width:36px;height:36px;border-radius:11px;background:var(--brass); color:var(--palm); font-weight:800; font-size:19px; display:grid; place-items:center}
+  .brand{display:flex; flex-direction:column; line-height:1.2}
+  .brand b{font-size:19px; color:var(--sand); font-weight:800; letter-spacing:.2px}
+  .brand span{font-size:10px; color:color-mix(in srgb,var(--sand) 68%,transparent)}
+  .spacer{flex:1}
+  .pill{padding:6px 13px; border-radius:var(--r-pill); font-weight:800; font-size:13px; cursor:pointer; border:1px solid color-mix(in srgb,var(--brass) 55%,transparent)}
+  .pill.plus{background:color-mix(in srgb,var(--brass) 16%,transparent); color:var(--brass)}
+  .pill.plus.active{background:var(--brass); color:var(--palm)}
+  .iconbtn{background:none;border:0;color:color-mix(in srgb,var(--lightText) 82%,transparent);cursor:pointer;padding:4px;display:grid;place-items:center}
+  .streak{display:flex;align-items:center;gap:5px;padding:6px 11px; border-radius:var(--r-pill); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); font-size:12.5px; font-weight:700; color:var(--sand); white-space:nowrap}
+  .streak svg{color:var(--brass)}
+
+  /* thin sadu keyline instead of loud strip */
+  .sadu{height:3px; background:linear-gradient(90deg,var(--brass),var(--palmSoft),var(--brass)); opacity:.7}
+
+  .body{flex:1; overflow-y:auto; overflow-x:hidden}
+  .pad{padding:16px 16px 96px}
+  .body::-webkit-scrollbar{width:0}
+
+  /* card */
+  .wcard{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card)}
+  .stack>*+*{margin-top:12px}
+  .p16{padding:16px} .p18{padding:18px}
+  .muted{color:var(--muted)}
+  .num{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.2px}
+  .sub{font-size:12px; color:var(--muted); line-height:1.5}
+
+  /* section header: eyebrow + optional action, no emoji */
+  .shead{display:flex; align-items:baseline; justify-content:space-between; margin:22px 2px 10px}
+  .shead .t{font-size:12px; font-weight:800; letter-spacing:.8px; color:var(--muted)}
+  .shead .a{font-size:12px; color:var(--palmSoft); font-weight:700}
+
+  /* icon token */
+  .itok{width:40px;height:40px;border-radius:var(--r-tok);display:grid;place-items:center;flex:0 0 auto}
+  .itok svg{width:21px;height:21px}
+  .itok.palm{background:color-mix(in srgb,var(--palmSoft) 15%,transparent);color:var(--palmSoft)}
+  .itok.brass{background:color-mix(in srgb,var(--brass) 16%,transparent);color:var(--brassInk)}
+  .app[data-apptheme="dark"] .itok.brass{color:var(--brass)}
+  .itok.madder{background:var(--madderSoft);color:var(--madder)}
+  .itok.neutral{background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--muted)}
+
+  /* budget card */
+  .bud-top{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+  .bud-amt{display:flex; align-items:baseline; gap:6px}
+  .bud-amt b{font-size:33px; font-weight:700; font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-1px}
+  .bud-amt small{font-size:14px; color:var(--muted)}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:5px 10px; border-radius:var(--r-pill); font-size:11px; font-weight:800}
+  .badge.ok{background:var(--okSoft); color:var(--palmSoft)}
+  .badge.bad{background:var(--madderSoft); color:var(--madder)}
+  .bar{height:10px; border-radius:var(--r-pill); background:var(--track); overflow:hidden; margin:15px 0 10px}
+  .bar>i{display:block; height:100%; border-radius:var(--r-pill); background:var(--palmSoft)}
+  .bar.over>i{background:var(--madder)}
+
+  /* safe-to-spend */
+  .safe{display:flex; align-items:center; gap:13px; padding:16px; border-radius:var(--r-card); border:1px solid var(--line)}
+  .safe.ok{background:var(--okSoft); border-color:color-mix(in srgb,var(--palmSoft) 22%,transparent)}
+  .safe.bad{background:var(--madderSoft); border-color:color-mix(in srgb,var(--madder) 22%,transparent)}
+  .safe .grow{flex:1}
+  .safe .t1{font-weight:800; font-size:15px}
+  .safe .t2{font-size:11.5px; color:var(--muted); margin-top:3px}
+  .safe .val{font-size:17px; font-weight:800; font-family:var(--mono); text-align:left}
+  .safe .val small{display:block;font-size:9.5px;color:var(--muted);font-weight:600;font-family:var(--appfont)}
+
+  /* feature rows */
+  .frow{display:flex; align-items:center; gap:13px; padding:14px 15px}
+  .frow+.frow{border-top:1px solid var(--line)}
+  .frow .grow{flex:1; min-width:0}
+  .frow .title{font-weight:700; font-size:14.5px}
+  .frow .desc{font-size:11.5px; color:var(--muted); margin-top:2px}
+  .chev{color:var(--muted); display:grid; place-items:center}
+
+  /* expense list */
+  .erow{display:flex; align-items:center; gap:12px; padding:13px 15px}
+  .erow+.erow{border-top:1px solid var(--line)}
+  .erow .grow{flex:1; min-width:0}
+  .erow .title{font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .erow .desc{font-size:11px; color:var(--muted); margin-top:2px}
+  .erow .amt{font-weight:700; font-size:14px; font-family:var(--mono)}
+  .erow .itok{width:38px;height:38px}
+  .erow .itok svg{width:19px;height:19px}
+
+  /* insight */
+  .insight{border-radius:var(--r-card); padding:16px; display:flex; gap:13px; align-items:flex-start; border:1px solid transparent}
+  .insight.warn{background:var(--madderSoft); border-color:color-mix(in srgb,var(--madder) 20%,transparent)}
+  .insight.good{background:var(--okSoft)}
+  .insight .it{font-weight:800; font-size:14.5px; display:flex; justify-content:space-between; gap:8px; align-items:center}
+  .insight .tag{font-size:9.5px; font-weight:800; letter-spacing:.5px; color:var(--muted); border:1px solid var(--line); padding:2px 7px; border-radius:var(--r-pill); white-space:nowrap; background:var(--card)}
+  .insight .ib{font-size:12.5px; line-height:1.7; margin-top:7px}
+  .insight .cue{font-size:11px; font-weight:800; color:var(--palmSoft); margin-top:9px; display:inline-flex; align-items:center; gap:4px}
+  .dots{display:flex; gap:6px; justify-content:center; margin-top:11px}
+  .dots i{width:6px;height:6px;border-radius:99px;background:var(--line)} .dots i.on{width:20px;background:var(--brass)}
+
+  .ta{width:100%; border:1px solid var(--line); background:var(--sand); color:var(--ink); border-radius:var(--r-chip); padding:12px; font-family:inherit; font-size:12.5px; line-height:1.7; resize:none}
+  .btn{width:100%; border:0; border-radius:var(--r-chip); padding:14px; font-family:inherit; font-weight:800; font-size:14.5px; cursor:pointer; background:var(--palm); color:#fff; display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn.brass{background:var(--brass); color:var(--palm)}
+  .btn.danger{background:var(--madder); color:#fff}
+  .btn.line{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn[disabled]{opacity:.4; cursor:not-allowed}
+  .btn.ghost{background:transparent; color:var(--muted); font-weight:700; font-size:12.5px; padding:8px}
+
+  .fab{position:absolute; bottom:90px; left:20px; width:54px;height:54px;border-radius:16px;background:var(--brass);color:var(--palm);display:grid;place-items:center;box-shadow:0 12px 26px -10px rgba(0,0,0,.45); z-index:20; cursor:pointer; border:0}
+
+  .nav{position:absolute; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--line); display:flex; padding-bottom:16px; z-index:25}
+  .nav::before{content:"";position:absolute;top:-3px;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--brass),var(--palmSoft),var(--brass));opacity:.7}
+  .nav button{position:relative; flex:1; background:none;border:0;cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--muted); font-family:inherit; font-size:10.5px; font-weight:700; padding:13px 0 6px; -webkit-tap-highlight-color:transparent}
+  /* الحبّة النحاسية المنزلقة خلف المحدد */
+  .nav button::before{content:"";position:absolute;top:9px;left:50%;width:46px;height:30px;border-radius:999px;
+    background:color-mix(in srgb,var(--brass) 30%,transparent);
+    transform:translateX(-50%) scaleX(0);transition:transform .24s cubic-bezier(.3,.7,.3,1);z-index:0}
+  .app[data-apptheme="dark"] .nav button::before{background:color-mix(in srgb,var(--brass) 22%,transparent)}
+  .nav button.on::before{transform:translateX(-50%) scaleX(1)}
+  .nav button svg,.nav button span{position:relative;z-index:1}
+  .nav button svg{transition:transform .24s cubic-bezier(.34,1.4,.5,1)}
+  .nav button.on svg{transform:scale(1.14)}
+  .nav button.on{color:var(--palm); font-weight:800}
+  .app[data-apptheme="dark"] .nav button.on{color:var(--palmSoft)}
+  .nav svg{width:23px;height:23px}
+  .nav button:active svg{transform:scale(.9)}
+
+  /* تغذية الضغط على العناصر التفاعلية */
+  .btn,.pill,.frow,.erow,.srow,.safe,.seg button,.miniseg button{transition:transform .11s ease, background .15s ease}
+  .btn:active,.pill:active,.frow:active,.erow:active,.srow:active,.safe:active{transform:scale(.975)}
+
+  /* انتقال محتوى التبويب */
+  @keyframes tabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .main.enter{animation:tabIn .30s cubic-bezier(.3,.7,.3,1)}
+
+  .push{position:absolute; inset:0; background:var(--sand); z-index:30; display:flex; flex-direction:column; transform:translateX(-100%); transition:transform .3s cubic-bezier(.32,.72,.28,1); border-radius:44px; overflow:hidden}
+  .push.show{transform:translateX(0)}
+  .navbar2{background:var(--header); color:var(--lightText); padding-top:52px; display:flex; align-items:center; gap:4px; padding-bottom:13px; padding-inline:8px 16px; flex:0 0 auto}
+  .navbar2 .back{background:none;border:0;color:var(--lightText);cursor:pointer;padding:8px;display:grid;place-items:center}
+  .navbar2 b{font-size:18px; font-weight:800}
+
+  /* paywall — flat, editorial */
+  .pw-hero{border-radius:var(--r-card); padding:20px; color:var(--lightText); background:var(--palm); display:flex; align-items:center; gap:14px; border:1px solid color-mix(in srgb,var(--brass) 30%,transparent)}
+  .pw-hero .mark{width:52px;height:52px;border-radius:14px;background:var(--brass);color:var(--palm);font-weight:800;font-size:22px;display:grid;place-items:center;flex:0 0 auto}
+  .pw-hero h2{margin:0;font-size:19px}
+  .pw-hero p{margin:4px 0 0;font-size:12.5px;opacity:.82;line-height:1.5}
+  .pw-price{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--palm); letter-spacing:-1px}
+  .app[data-apptheme="dark"] .pw-price{color:var(--brass)}
+  .beat{display:inline-flex;align-items:center;gap:5px; color:var(--palmSoft); font-size:11.5px; font-weight:700; margin-top:6px}
+  .beat svg{width:13px;height:13px}
+  .cmp{width:100%; border-collapse:collapse; font-size:11.5px}
+  .cmp th,.cmp td{padding:12px 8px; border-top:1px solid var(--line); vertical-align:top}
+  .cmp thead th{border-top:0; font-weight:800; font-size:12px}
+  .cmp .feat{font-weight:700; font-size:12.5px; text-align:right; width:46%}
+  .cmp .free{text-align:center; color:var(--muted); width:27%}
+  .cmp .plus{text-align:center; color:var(--brassInk); font-weight:800; width:27%}
+  .app[data-apptheme="dark"] .cmp .plus{color:var(--brass)}
+  .cmp .note{color:var(--muted); font-weight:600; font-size:10px; margin-top:3px; line-height:1.4}
+  .cmp .yes{color:var(--palmSoft);font-weight:800}
+  .cmp .no{color:var(--muted);opacity:.6}
+
+  /* settings */
+  .slabel{font-size:11px; font-weight:800; letter-spacing:.7px; color:var(--muted); margin:20px 4px 8px}
+  .srow{display:flex; align-items:center; gap:13px; padding:13px 14px}
+  .srow+.srow{border-top:1px solid var(--line)}
+  .srow .grow{flex:1}
+  .srow .st{font-size:14px; font-weight:700}
+  .srow .ss{font-size:11px; color:var(--muted); margin-top:2px}
+  .miniseg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .miniseg button{border:0;background:var(--card);color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:700;padding:6px 11px;cursor:pointer}
+  .miniseg button.on{background:var(--palm);color:#fff}
+  .drop{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:5px 9px;font-family:inherit;font-size:12.5px}
+  .srow.danger .st{color:var(--madder)}
+
+  .warn{display:flex; gap:12px; align-items:center; background:var(--madderSoft); border:1px solid color-mix(in srgb,var(--madder) 22%,transparent); border-radius:var(--r-card); padding:15px; font-weight:700; font-size:13.5px; line-height:1.55}
+  .warn svg{flex:0 0 auto; color:var(--madder); width:26px;height:26px}
+  .del-item{display:flex; gap:10px; align-items:flex-start; padding:5px 0; font-size:13px; line-height:1.5}
+  .del-item svg{color:var(--madder); flex:0 0 auto; margin-top:2px; width:16px;height:16px}
+  .check{display:flex; gap:11px; align-items:center; padding:14px; cursor:pointer}
+  .check input{width:20px;height:20px;accent-color:var(--madder)}
+
+  .modal-bg{position:absolute; inset:0; background:rgba(0,0,0,.5); z-index:60; display:none; align-items:center; justify-content:center; padding:28px; border-radius:44px}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card); color:var(--ink); border-radius:20px; padding:20px; width:100%; max-width:300px}
+  .modal h4{margin:0 0 8px; font-size:17px}
+  .modal p{margin:0 0 16px; font-size:13px; line-height:1.6; color:var(--muted)}
+  .modal .actions{display:flex; gap:8px}
+  .modal .actions button{flex:1}
+
+  .memrow{display:flex; align-items:center; gap:11px; padding:13px 0}
+  .memrow+.memrow{border-top:1px solid var(--line)}
+  .avatar{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+  .mgrow{flex:1}
+  .mbar{height:7px;border-radius:99px;background:var(--track);margin-top:7px;overflow:hidden}
+  .mbar>i{display:block;height:100%;border-radius:99px}
+  .role{font-size:10px;color:var(--muted);font-weight:600}
+  .chal .cbar{height:8px;border-radius:99px;background:var(--track);overflow:hidden;margin:10px 0 7px}
+  .chal .cbar>i{display:block;height:100%;background:var(--brass);border-radius:99px}
+
+  .bubble{max-width:82%; padding:12px 14px; border-radius:16px; font-size:13px; line-height:1.65}
+  .bubble.bot{background:var(--card); border:1px solid var(--line); border-top-right-radius:5px; align-self:flex-start}
+  .bubble.me{background:var(--palm); color:#fff; border-top-left-radius:5px; align-self:flex-end}
+  .chat{display:flex; flex-direction:column; gap:10px}
+
+  .cap{max-width:420px;text-align:center;font-size:11.5px;color:var(--pgmuted);line-height:1.7}
+  @media (prefers-reduced-motion:reduce){.push{transition:none}}
+</style>
+
+<div class="wrap">
+  <div class="lead">
+    <h1>وِفْرة <span class="k">·</span> هوية منقّحة</h1>
+    <p>نظام أيقونات موحّد، زوايا مضبوطة، ونبرة أهدأ — بدون بصمة الذكاء الاصطناعي. تنقّل بين التبويبات، افتح <b>و+</b> و<b>الإعدادات</b>، وجرّب <b>حذف الحساب</b>.</p>
+  </div>
+  <div class="controls">
+    <div class="seg" id="themeSeg"><button data-app="light" class="on">فاتح</button><button data-app="dark">غامق</button></div>
+  </div>
+
+  <div class="phone">
+    <div class="island"></div>
+    <div class="app" id="app" data-apptheme="light">
+      <div class="screen">
+
+        <div class="status">
+          <span class="num">9:41</span>
+          <span class="r">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="5" y="4" width="3" height="8" rx="1" fill="currentColor"/><rect x="10" y="1.5" width="3" height="10.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".4"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9l1.2-1.3C13 2.2 10.9 1.4 8.5 1.4S4 2.2 2.4 3.8l1.2 1.3C4.9 3.9 6.6 3.2 8.5 3.2z" fill="currentColor"/><circle cx="8.5" cy="9.4" r="1.5" fill="currentColor"/></svg>
+            <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" stroke="currentColor" stroke-opacity=".5" fill="none"/><rect x="2.5" y="2.5" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="23.5" y="4.5" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".5"/></svg>
+          </span>
+        </div>
+
+        <div class="appbar">
+          <div class="row">
+            <div class="logo">و</div>
+            <div class="brand"><b>وِفْرة</b><span>خلّ فلوسك توفر لك</span></div>
+            <div class="spacer"></div>
+            <div class="pill plus" id="plusPill" onclick="pushScreen('paywall')">و+</div>
+            <button class="iconbtn" onclick="pushScreen('settings')" aria-label="الإعدادات">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 13a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V19a2 2 0 11-4 0v-.1A1.6 1.6 0 006 17.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003.3 12H3a2 2 0 110-4h.1A1.6 1.6 0 004.7 5.3l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 0010 3.3V3a2 2 0 114 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0020.7 10h.3a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z" stroke="currentColor" stroke-width="1.3"/></svg>
+            </button>
+            <div class="streak"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c2 3.5-1 5-.5 8 2-1 3-3 3-3 1.5 2 2.5 4 2.5 6a5 5 0 11-10 0c0-1.5.7-3 1.7-4 .3 1 1 1.7 1.8 2C11 8 12 6 12 2z"/></svg>12</div>
+          </div>
+        </div>
+        <div class="sadu"></div>
+
+        <div class="body" id="body">
+
+          <!-- HOME -->
+          <div class="pad main" data-main="home">
+            <div class="stack">
+              <!-- budget -->
+              <div class="wcard p18">
+                <div class="bud-top">
+                  <div>
+                    <div class="bud-amt"><b class="num">81.640</b><small class="num">/ 100 ر.ع</small></div>
+                    <div class="sub" style="margin-top:6px">مصروف يوليو · المتبقي <span class="num">18.360</span> ر.ع</div>
+                  </div>
+                  <span class="badge ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>ضمن الميزانية</span>
+                </div>
+                <div class="bar"><i style="width:82%"></i></div>
+              </div>
+
+              <!-- safe to spend -->
+              <div class="safe ok">
+                <div class="itok palm"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="1.6"/><path d="M3 7l2-3h14l2 3M16 13h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                <div class="grow"><div class="t1">أمانك اليومي</div><div class="t2">وضعك مريح · باقي 5 أيام للراتب</div></div>
+                <div class="val"><span class="num">3.672</span><small>ريال/اليوم</small></div>
+              </div>
+
+              <!-- features group -->
+              <div class="wcard">
+                <div class="frow" onclick="toast('زكاتي — النصاب والحَوْل')">
+                  <div class="itok palm"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 5v2H5V8l7-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 10v7M10 10v7M14 10v7M18 10v7M4 19h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                  <div class="grow"><div class="title">زكاتي</div><div class="desc">مدخراتك دون النصاب حالياً</div></div>
+                  <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+                <div class="frow" onclick="toast('استراتيجيات التوفير')">
+                  <div class="itok brass"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19c2-8 6-9 8-9m0 0l-2.5-2M13 10l-2 2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="6" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg></div>
+                  <div class="grow"><div class="title">استراتيجيات التوفير</div><div class="desc">50/30/20 مجاناً · 7 استراتيجيات في وِفْرة+</div></div>
+                  <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+                <div class="frow" onclick="toast('الاشتراكات المتكررة')">
+                  <div class="itok palm"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0114-5m2-3v5h-5M20 12a8 8 0 01-14 5m-2 3v-5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div class="grow"><div class="title">الاشتراكات المتكررة</div><div class="desc"><span class="num">38.571</span> ر.ع/شهر · 6 نشطة</div></div>
+                  <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+              </div>
+
+              <!-- insight -->
+              <div class="insight warn">
+                <div class="itok madder"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15l5-5 3 3 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 7h3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div style="flex:1">
+                  <div class="it"><span>بهالوتيرة بتتجاوز الميزانية</span><span class="tag">تحليل فوري</span></div>
+                  <div class="ib">صرفت <b>81.6</b> من <b>100</b> وباقي 5 أيام على الراتب. لو استمرّيت بنفس المعدّل، تقفل الدورة حوالي <b>9 ر.ع فوق الحد</b>.</div>
+                  <span class="cue">اسأل المستشار عن خطة <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+              </div>
+              <div class="dots"><i class="on"></i><i></i><i></i></div>
+
+              <!-- capture -->
+              <div class="shead"><span class="t">التقاط رسالة بنك</span></div>
+              <div class="wcard p16">
+                <div class="sub" style="margin-bottom:10px">الصق رسالة الخصم، ونحوّلها إلى مصروف مصنّف تلقائياً.</div>
+                <textarea class="ta" rows="3" id="smsBox">تم خصم OMR 4.250 من حسابك ****3312 لدى STARBUCKS AL KHUWAIR بتاريخ 12/07/2026</textarea>
+                <div style="height:10px"></div>
+                <button class="btn" onclick="parseSms()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>أضف المصروف</button>
+              </div>
+
+              <!-- recent -->
+              <div class="shead"><span class="t">آخر المصاريف</span><span class="a">الكل (5)</span></div>
+              <div class="wcard" id="recentList">
+                <div class="erow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4L2 9l10 5 8-4v6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 12v4c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-4" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="grow"><div class="title">دورة PIPESIM المتقدمة</div><div class="desc">تعليم · 15/07</div></div><div class="amt num">53.320</div></div>
+                <div class="erow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><rect x="7" y="3" width="10" height="18" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="grow"><div class="title">ChatGPT</div><div class="desc">اشتراكات رقمية · 13/07</div></div><div class="amt num">7.920</div></div>
+                <div class="erow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3v8a2 2 0 002 2v8M6 3v4M9 3v4M8 7h1M17 3c-1.5 0-2.5 2-2.5 5s1 3 2.5 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="grow"><div class="title">مطعم السبع فصول</div><div class="desc">مطاعم · 16/07</div></div><div class="amt num">1.900</div></div>
+                <div class="erow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M5 21V6a2 2 0 012-2h6a2 2 0 012 2v15M4 21h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M15 9h2.5L19 11v6a1.5 1.5 0 01-3 0v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="grow"><div class="title">نفط عمان — مرمول</div><div class="desc">بنزين · 12/07</div></div><div class="amt num">7.500</div></div>
+                <div class="erow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="grow"><div class="title">إنترنت Ooredoo</div><div class="desc">فواتير واتصالات · 09/07</div></div><div class="amt num">11.000</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADVISOR -->
+          <div class="pad main" data-main="advisor" hidden>
+            <div class="shead" style="margin-top:6px"><span class="t">مستشار وِفْرة</span></div>
+            <div class="chat">
+              <div class="bubble bot">هلا أحمد 👋 صرفت هالشهر <b>81.6 ر.ع</b> من <b>100</b>. أكبر بند عندك التعليم (دورة PIPESIM). تبي أرتّب خطة للـ 5 أيام الباقية للراتب؟</div>
+              <div class="bubble me">إيه، كم أقدر أصرف باليوم؟</div>
+              <div class="bubble bot">وضعك مريح — تقدر تصرف لين <b>3.672 ر.ع/اليوم</b> وتظل ضمن الميزانية، بعد خصم التزاماتك الجاية. أنصحك تثبّت "قهوة البيت" (توفّر ≈ 21 ر.ع بالشهر).</div>
+            </div>
+            <div class="wcard p16" style="margin-top:16px"><div class="sub" style="text-align:center">10 أسئلة مجانية بالشهر · بلا حدود في وِفْرة+</div></div>
+          </div>
+
+          <!-- FAMILY -->
+          <div class="pad main" data-main="family" hidden>
+            <div class="shead" style="margin-top:6px"><span class="t">بيت المال العائلي</span><span class="a">كود: K7M2QP</span></div>
+            <div class="wcard p18">
+              <div class="bud-top"><div class="bud-amt"><b class="num" style="font-size:27px">410</b><small class="num">/ 500 ر.ع</small></div><span class="badge ok">3 أعضاء</span></div>
+              <div class="bar"><i style="width:82%"></i></div>
+              <div class="sub">المتبقي <span class="num">90</span> ر.ع لميزانية العائلة</div>
+            </div>
+            <div class="wcard p16" style="margin-top:12px">
+              <div class="memrow"><div class="avatar" style="background:#2E7D5B">أ</div><div class="mgrow"><div class="title">أحمد <span class="role">· مالك</span></div><div class="mbar"><i style="width:100%;background:#2E7D5B"></i></div></div><div class="amt num">212</div></div>
+              <div class="memrow"><div class="avatar" style="background:#B8912B">م</div><div class="mgrow"><div class="title">مريم <span class="role">· مساهم</span></div><div class="mbar"><i style="width:63%;background:#B8912B"></i></div></div><div class="amt num">134</div></div>
+              <div class="memrow"><div class="avatar" style="background:#C9584A">س</div><div class="mgrow"><div class="title">سالم <span class="role">· مشاهد</span></div><div class="mbar"><i style="width:30%;background:#C9584A"></i></div></div><div class="amt num">64</div></div>
+            </div>
+          </div>
+
+          <!-- CHALLENGES -->
+          <div class="pad main" data-main="challenges" hidden>
+            <div class="shead" style="margin-top:6px"><span class="t">التحديات</span><span class="a">سلسلة 12 يوم</span></div>
+            <div class="wcard p16 chal">
+              <div style="display:flex;gap:12px;align-items:center"><div class="itok brass"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3v8a2 2 0 002 2v8M6 3v4M9 3v4M8 7h1M17 3c-1.5 0-2.5 2-2.5 5s1 3 2.5 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><b style="font-size:14.5px">قهوة البيت ٣٠ يوم</b></div>
+              <div class="cbar"><i style="width:60%"></i></div>
+              <div class="sub">18 / 30 يوم · وفّرت ≈ <span class="num">21.6</span> ر.ع</div>
+            </div>
+            <div class="wcard p16 chal" style="margin-top:12px">
+              <div style="display:flex;gap:12px;align-items:center"><div class="itok palm"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><b style="font-size:14.5px">أسبوع بلا توصيل</b></div>
+              <div class="cbar"><i style="width:57%"></i></div>
+              <div class="sub">4 / 7 أيام · باقي 3 أيام</div>
+            </div>
+            <div class="wcard p16 chal" style="margin-top:12px">
+              <div style="display:flex;gap:12px;align-items:center"><div class="itok brass"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="2.4" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="8" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 18c0-2.2 2-3.6 4.5-3.6s4.5 1.4 4.5 3.6M12 18c0-2.2 2-3.6 4.5-3.6S21 15.8 21 18" stroke="currentColor" stroke-width="1.5"/></svg></div><b style="font-size:14.5px">تحدي العائلة</b></div>
+              <div class="cbar"><i style="width:72%"></i></div>
+              <div class="sub">72 / 100 · متقدّم على مريم بـ <span class="num">8.4</span> ر.ع</div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="fab" id="fab" onclick="parseSms(true)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+
+        <div class="nav" id="nav">
+          <button class="on" data-go="home" onclick="showMain('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5" stroke="currentColor" stroke-width="1.7"/><path d="M5 9.5V20h5v-6h4v6h5V9.5" stroke="currentColor" stroke-width="1.7"/></svg><span>الرئيسية</span></button>
+          <button data-go="advisor" onclick="showMain('advisor')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 3V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>المستشار</span></button>
+          <button data-go="family" onclick="showMain('family')"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 19c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 19c0-2.5 2-4 4.5-4s4 1.5 4 4" stroke="currentColor" stroke-width="1.5"/></svg><span>العائلة</span></button>
+          <button data-go="challenges" onclick="showMain('challenges')"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v3a4 4 0 01-8 0V4z" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v4m-3 4h6M8 5H5v1a3 3 0 003 3M16 5h3v1a3 3 0 01-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>التحديات</span></button>
+        </div>
+
+        <!-- PAYWALL -->
+        <div class="push" id="paywall">
+          <div class="navbar2"><button class="back" onclick="popScreen('paywall')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b>وِفْرة+</b></div>
+          <div class="body"><div class="pad" style="padding-bottom:32px">
+            <div class="pw-hero">
+              <div class="mark">و+</div>
+              <div><h2>اشتراك وِفْرة+</h2><p>كل الاستراتيجيات، مستشار بلا حدود، وعائلة أكبر — بأقل من ريال بالشهر.</p></div>
+            </div>
+
+            <div class="seg" style="margin:16px auto 0; display:flex; width:fit-content" id="planSeg">
+              <button data-plan="month">شهري</button><button data-plan="year" class="on">سنوي · وفّر 25٪</button>
+            </div>
+
+            <div class="wcard p18" style="margin-top:14px; text-align:center">
+              <div class="pw-price" id="pwPrice">8.900 ر.ع</div>
+              <div class="sub" id="pwSub" style="margin-top:2px">سنوياً · ≈ 0.74 ر.ع بالشهر</div>
+              <div style="margin:6px 0 14px"><span class="beat" id="pwBeat"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>أوفر بـ 61٪ من أقرب منافس</span></span></div>
+              <button class="btn" id="pwBuy" onclick="buyPlus()"><span id="pwBuyTxt">ابدأ شهراً مجاناً</span></button>
+              <button class="btn ghost" onclick="toast('جاري استعادة المشتريات…')">استعادة المشتريات</button>
+              <div class="sub" style="font-size:10.5px">إلغاء بأي وقت · بدون التزام</div>
+            </div>
+
+            <div class="shead"><span class="t">مقارنة الخطط</span></div>
+            <div class="wcard" style="overflow-x:auto">
+              <table class="cmp"><thead><tr><th class="feat">الميزة</th><th class="free">مجاني</th><th class="plus">وِفْرة+</th></tr></thead><tbody id="cmpBody"></tbody></table>
+            </div>
+            <p class="sub" style="text-align:center;line-height:1.8;padding:14px 6px 0">المجاني عندنا سخيّ عمداً: أمانك اليومي، زكاتي، والتقاط الرسائل — بلا حدود، للجميع.</p>
+          </div></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="push" id="settings">
+          <div class="navbar2"><button class="back" onclick="popScreen('settings')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b>الإعدادات</b></div>
+          <div class="body"><div class="pad" style="padding-bottom:32px">
+            <div class="slabel">اللغة والعملة</div>
+            <div class="wcard">
+              <div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="currentColor" stroke-width="1.5"/></svg></div><div class="grow"><div class="st">اللغة</div></div><div class="miniseg"><button class="on">العربية</button><button>English</button></div></div>
+              <div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5 1-2.5 2s1 1.5 2.5 2 2.5 1 2.5 2-1 2-2.5 2-2-.5-2.5-1.5M12 6.5v11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="grow"><div class="st">العملة</div><div class="ss">تلقائية من دولة جهازك</div></div><select class="drop"><option>OMR · ر.ع</option><option>SAR · ر.س</option><option>AED · د.إ</option></select></div>
+            </div>
+
+            <div class="slabel">التفضيلات</div>
+            <div class="wcard">
+              <div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18 7 7 0 010-14V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="grow"><div class="st">المظهر</div></div><div class="miniseg" id="setTheme"><button data-app="light">تلقائي</button><button data-app="light" class="on">فاتح</button><button data-app="dark">غامق</button></div></div>
+              <div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="grow"><div class="st">يوم الراتب</div><div class="ss">يُحسب عليه أمانك اليومي</div></div><select class="drop"><option>25</option><option>1</option><option>27</option><option>28</option></select></div>
+              <div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="grow"><div class="st">أتمتة الآيفون</div><div class="ss">ربط رسائل البنك عبر Shortcuts</div></div><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            </div>
+
+            <div class="slabel">الحساب</div>
+            <div class="wcard">
+              <div class="srow danger" onclick="pushScreen('delete')" style="cursor:pointer"><div class="itok madder"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M10 7V5h4v2M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="grow"><div class="st">حذف الحساب</div><div class="ss">حذف حسابك وكل بياناتك نهائياً</div></div><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            </div>
+
+            <div class="slabel">عن التطبيق</div>
+            <div class="wcard"><div class="srow"><div class="itok neutral"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 11v5M12 8v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="grow"><div class="st">وِفْرة · الإصدار 0.1.0</div><div class="ss">خلّ فلوسك توفر لك</div></div></div></div>
+          </div></div>
+        </div>
+
+        <!-- DELETE -->
+        <div class="push" id="delete">
+          <div class="navbar2"><button class="back" onclick="popScreen('delete')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b>حذف الحساب</b></div>
+          <div class="body"><div class="pad" style="padding-bottom:32px">
+            <div class="warn">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3L12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>هذا الإجراء نهائي ولا يمكن التراجع عنه.</span>
+            </div>
+            <div style="font-size:13px;font-weight:800;margin:18px 0 10px">سيُحذف نهائياً:</div>
+            <div class="del-item"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>كل مصاريفك وبياناتك المالية</span></div>
+            <div class="del-item"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>عضويتك في بيت المال العائلي</span></div>
+            <div class="del-item"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>إعداداتك وتفضيلاتك المحفوظة</span></div>
+            <div class="del-item"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>حسابك بالكامل</span></div>
+            <p class="sub" style="line-height:1.6;margin-top:12px">لا نحتفظ بأي نسخة. إن رغبت بالعودة لاحقاً ستبدأ من جديد.</p>
+            <label class="wcard check" style="margin-top:18px"><input type="checkbox" id="delChk" onchange="document.getElementById('delBtn').disabled=!this.checked"><span style="font-size:13px">أفهم أن الحذف نهائي وأريد المتابعة</span></label>
+            <div style="height:16px"></div>
+            <button class="btn danger" id="delBtn" disabled onclick="confirmDelete()">حذف الحساب نهائياً</button>
+          </div></div>
+        </div>
+
+        <div class="modal-bg" id="modalBg"><div class="modal" id="modalCard"></div></div>
+        <div id="toast" style="position:absolute;bottom:98px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--sand);padding:10px 16px;border-radius:11px;font-size:12.5px;opacity:0;transition:.25s;z-index:70;pointer-events:none;white-space:nowrap;max-width:80%;text-align:center"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <p class="cap">محاكاة HTML للهوية المنقّحة — الخطوط النهائية Reem Kufi و IBM Plex Arabic (يتعذّر تحميلها هنا). الأرقام مطابقة لبيانات الكود.</p>
+</div>
+
+<script>
+  const app = document.getElementById('app');
+  function setApp(t){ app.setAttribute('data-apptheme', t);
+    document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.app===t)); }
+  document.querySelectorAll('#themeSeg button').forEach(b=> b.onclick=()=>setApp(b.dataset.app));
+  document.querySelectorAll('#setTheme button').forEach(b=> b.onclick=()=>{
+    document.querySelectorAll('#setTheme button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); setApp(b.dataset.app);});
+
+  const fab = document.getElementById('fab');
+  function showMain(name){
+    document.querySelectorAll('.main').forEach(m=>{
+      const active = m.dataset.main===name;
+      m.hidden = !active;
+      if(active){ m.classList.remove('enter'); void m.offsetWidth; m.classList.add('enter'); }
+    });
+    document.querySelectorAll('#nav button').forEach(b=> b.classList.toggle('on', b.dataset.go===name));
+    fab.style.display = name==='home' ? 'grid':'none';
+    document.getElementById('body').scrollTop = 0;
+  }
+  function pushScreen(id){ document.getElementById(id).classList.add('show'); }
+  function popScreen(id){ document.getElementById(id).classList.remove('show'); }
+
+  let toT;
+  function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg;
+    t.style.opacity=1; t.style.transform='translateX(-50%) translateY(0)';
+    clearTimeout(toT); toT=setTimeout(()=>{t.style.opacity=0; t.style.transform='translateX(-50%) translateY(20px)';},1900); }
+
+  const plans = {
+    year:{price:'8.900 ر.ع', sub:'سنوياً · ≈ 0.74 ر.ع بالشهر', beat:'أوفر بـ 61٪ من أقرب منافس', buy:'ابدأ شهراً مجاناً'},
+    month:{price:'0.990 ر.ع', sub:'شهرياً · أقل من ريال', beat:'أوفر بـ 48٪ من أقرب منافس', buy:'ابدأ أسبوعين مجاناً'},
+  };
+  function setPlan(p){ const d=plans[p];
+    pwPrice.textContent=d.price; pwSub.textContent=d.sub;
+    document.querySelector('#pwBeat span').textContent=d.beat; pwBuyTxt.textContent=d.buy;
+    document.querySelectorAll('#planSeg button').forEach(b=>b.classList.toggle('on', b.dataset.plan===p)); }
+  document.querySelectorAll('#planSeg button').forEach(b=> b.onclick=()=>setPlan(b.dataset.plan));
+
+  let isPlus=false;
+  function buyPlus(){ isPlus=true; const pill=document.getElementById('plusPill');
+    pill.textContent='و+ ✓'; pill.classList.add('active'); popScreen('paywall'); toast('أهلاً بك في وِفْرة+'); }
+
+  const feats=[
+    ['التقاط رسائل البنك','غير محدود','غير محدود','مقابل 15 رسالة/شهر عند المنافس'],
+    ['مستشار وِفْرة الذكي','10 أسئلة/شهر','بلا حدود','لا يوجد مستشار محادثة عند المنافسين'],
+    ['أمانك اليومي','مشمول','مشمول','حصرية وِفْرة'],
+    ['زكاتي (نصاب + حَوْل)','مشمول','مشمول','لا يقدّمها أي منافس'],
+    ['بيت المال العائلي','عضوان','حتى 8 أعضاء',''],
+    ['استراتيجيات التوفير','50/30/20','الثمانية كاملة',''],
+    ['الإحصائيات','حتى 3 أشهر','كل الفترات',''],
+    ['تصدير البيانات','—','CSV + Excel',''],
+    ['العملات المتعددة','—','مشمول',''],
+    ['الإعلانات','بدون','بدون',''],
+  ];
+  document.getElementById('cmpBody').innerHTML = feats.map(f=>`<tr>
+    <td class="feat">${f[0]}${f[3]?`<div class="note">${f[3]}</div>`:''}</td>
+    <td class="free">${f[1]==='—'?'<span class="no">—</span>':f[1]}</td>
+    <td class="plus">${f[2]}</td></tr>`).join('');
+
+  function modal(html){ document.getElementById('modalCard').innerHTML=html; document.getElementById('modalBg').classList.add('show'); }
+  function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+  function confirmDelete(){ modal(`<h4>حذف الحساب</h4><p>سيُحذف حسابك وكل بياناتك فوراً. متأكد؟</p>
+    <div class="actions"><button class="btn line" onclick="closeModal()">إلغاء</button><button class="btn danger" onclick="doDelete()">احذف</button></div>`); }
+  function doDelete(){ modal(`<h4>تم حذف حسابك</h4><p>حُذفت كل بياناتك نهائياً. مع السلامة.</p>
+    <div class="actions"><button class="btn" onclick="afterDelete()">تمام</button></div>`); }
+  function afterDelete(){ closeModal(); popScreen('delete'); popScreen('settings');
+    isPlus=false; const pill=document.getElementById('plusPill'); pill.textContent='و+'; pill.classList.remove('active');
+    document.getElementById('delChk').checked=false; document.getElementById('delBtn').disabled=true;
+    showMain('home'); toast('تم حذف الحساب (محاكاة)'); }
+
+  function parseSms(fromFab){
+    if(fromFab){ toast('إضافة مصروف يدوي'); return; }
+    const t=document.getElementById('smsBox').value;
+    if(/OMR|ر\.ع|خصم|SAR|AED/i.test(t)) toast('أُضيف: STARBUCKS — 4.250 ر.ع');
+    else toast('لا تبدو رسالة بنك');
+  }
+</script>
+</body>
+</html>
